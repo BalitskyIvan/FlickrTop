@@ -49,6 +49,9 @@ class ImagesRepositoryImpl(
                     ?.photos
                     ?.photo
                     ?.take(20)
+                    ?.also {
+                        images.clear()
+                    }
                     ?.forEach { imageInfo ->
                         val byteStream = imagesApi.fetchImage(
                             server = imageInfo.server,
@@ -109,10 +112,10 @@ class ImagesRepositoryImpl(
     ): String {
         val cw = ContextWrapper(context)
         val directory = cw.getDir("imageDir", Context.MODE_PRIVATE)
-        val mypath = File(directory, id)
+        val path = File(directory, id)
         var fos: FileOutputStream? = null
         try {
-            fos = FileOutputStream(mypath)
+            fos = FileOutputStream(path)
             bitmapImage.compress(Bitmap.CompressFormat.PNG, 100, fos)
         } catch (e: java.lang.Exception) {
             e.printStackTrace()
@@ -129,8 +132,7 @@ class ImagesRepositoryImpl(
     private fun loadImageFromStorage(
         id: String,
     ): Bitmap {
-        val cw = ContextWrapper(context)
-        val directory = cw.getDir("imageDir", Context.MODE_PRIVATE).absolutePath
+        val directory = ContextWrapper(context).getDir("imageDir", Context.MODE_PRIVATE).absolutePath
         val f = File(directory, id)
         return BitmapFactory.decodeStream(FileInputStream(f))
     }

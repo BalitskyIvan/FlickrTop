@@ -38,9 +38,9 @@ class MainScreenViewModel @Inject constructor(
 
     private fun fetchState(isForced: Boolean) {
         viewModelScope.launch(Dispatchers.IO) {
-            getImagesUseCase.invoke(isForced).collect { newState ->
-                if (newState is Result.Success)
-                    _images.update { newState.data }
+            getImagesUseCase.invoke(isForced).collect { imagesState ->
+                if (imagesState is Result.Success)
+                    _images.update { imagesState.data }
                 _error.update { "" }
                 _isLoadingVisible.update { false }
             }

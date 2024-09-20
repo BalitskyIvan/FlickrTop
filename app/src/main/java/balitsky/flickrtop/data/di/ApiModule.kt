@@ -15,7 +15,7 @@ class ApiModule {
 
     @Provides
     @Singleton
-    fun provideNewsApi(retrofit: Retrofit): ImagesApi {
+    fun provideImagesApi(retrofit: Retrofit): ImagesApi {
         return retrofit.create(ImagesApi::class.java)
     }
 
