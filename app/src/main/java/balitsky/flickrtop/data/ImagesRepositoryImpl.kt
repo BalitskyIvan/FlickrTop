@@ -36,7 +36,6 @@ class ImagesRepositoryImpl(
                     .imagesDao()
                     .getAll()
                     .map { it.toModel() }
-                    .toSet()
 
                 if (savedImages.isNotEmpty()) {
                     images.addAll(savedImages)
@@ -44,14 +43,17 @@ class ImagesRepositoryImpl(
                 }
             }
             try {
-                imagesApi.fetchImagesList()
+                val newImages = imagesApi.fetchImagesList()
                     .body()
                     ?.photos
                     ?.photo
                     ?.take(20)
-                    ?.also {
-                        images.clear()
-                    }
+                    ?.reversed()
+
+                if (newImages?.isNotEmpty() == true) {
+                    images.clear()
+                }
+                newImages
                     ?.forEach { imageInfo ->
                         val byteStream = imagesApi.fetchImage(
                             server = imageInfo.server,
@@ -73,11 +75,12 @@ class ImagesRepositoryImpl(
                         emit(Result.Success(images))
                     }
 
-                if (images.isNotEmpty()) {
+                if (newImages?.isNotEmpty() == true) {
                     ContextWrapper(context)
                         .getDir("imageDir", Context.MODE_PRIVATE)
                         .delete()
 
+                    imagesDatabase.clearAllTables()
                     imagesDatabase.imagesDao().saveAll(
                         images.map {
                             saveToInternalStorage(bitmapImage = it.bitmap, id = it.id)
@@ -91,7 +94,7 @@ class ImagesRepositoryImpl(
                 }
 
             } catch (e: Exception) {
-                  emit(Result.Error(e.message.toString()))
+                emit(Result.Error(e.message.toString()))
             }
         }
     }
